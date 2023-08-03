@@ -1,20 +1,22 @@
-import { RxDatabase, addRxPlugin, createRxDatabase } from 'rxdb';
+import { addRxPlugin, createRxDatabase } from 'rxdb';
 import { getRxStorageMemory } from 'rxdb/plugins/storage-memory';
-import { RxDBFlexSearchPlugin } from '../src';
+import { RxDBDevModePlugin } from 'rxdb/plugins/dev-mode';
+import { RxCollectionSearch, RxDBFlexSearchPlugin, RxDatabaseSearch } from '../src';
 import { userSchema } from './database';
 
 describe('Replication', () => {
-  let database: RxDatabase;
+  let database: RxDatabaseSearch;
 
   beforeAll(() => {
     addRxPlugin(RxDBFlexSearchPlugin);
+    addRxPlugin(RxDBDevModePlugin);
   });
 
   beforeEach(async () => {
-    database = await createRxDatabase({
+    database = (await createRxDatabase({
       name: 'testdb',
       storage: getRxStorageMemory(),
-    });
+    })) as RxDatabaseSearch;
 
     await database.addCollections({
       users: {
@@ -24,11 +26,11 @@ describe('Replication', () => {
   });
 
   afterEach(async () => {
-    await database.destroy();
+    await database.remove();
   });
 
   it('should update index', async () => {
-    const collection = database.users as any;
+    const collection = database.users as RxCollectionSearch;
 
     await collection.insert({
       id: '1',
@@ -58,7 +60,7 @@ describe('Replication', () => {
     let user = await collection.findOne('1').exec();
     await user.patch({
       name: 'Max Lynch',
-      age: 53,
+      age: 32,
     });
 
     results = await collection.search('bill');
@@ -69,5 +71,28 @@ describe('Replication', () => {
 
     results = await collection.search('bill');
     expect(results.length).toBe(0);
+  });
+
+  it('should export/import indexes', async () => {
+    let indexId: string;
+    let indexData;
+    const collection = database.users as RxCollectionSearch;
+
+    await collection.insert({
+      id: '1',
+      name: 'Jeff Bezos',
+      age: 59,
+    });
+
+    await database.exportIndexes((id: string, data: string) => {
+      indexId = id;
+      indexData = data;
+    });
+
+    await database.remove();
+    await database.importIndexes({ [indexId]: indexData });
+
+    const { $index } = collection;
+    expect($index.contain('1')).toBe(true);
   });
 });
