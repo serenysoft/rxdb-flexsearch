@@ -48,7 +48,7 @@ await database.exportIndexes((key, data) => {
 });
 
 
-await database.exportIndexes({
+await database.importIndexes({
   [key]: localStorage.getItem(key);
 });
 
