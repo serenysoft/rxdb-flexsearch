@@ -2,7 +2,7 @@
   "name": "rxdb-flexsearch",
   "description": "RxDB Plugin based on FlexSearch implementation",
   "readmeFilename": "README.md",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "license": "MIT",
   "keywords": [
     "flexsearch",
