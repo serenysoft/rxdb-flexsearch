@@ -70,6 +70,36 @@ describe('Replication', () => {
     expect(results.length).toBe(0);
   });
 
+  it('should perform search with options', async () => {
+    database = await initDatabase();
+
+    await database.addCollections({
+      users: {
+        schema: userSchema,
+        options: {
+          searchable: true,
+        },
+      },
+    });
+
+    const collection = database.users as RxCollectionSearch;
+
+    await collection.insert({
+      id: '1',
+      name: 'Bill Gates',
+      age: 67,
+    });
+
+    await collection.insert({
+      id: '2',
+      name: 'Bill James',
+      age: 53,
+    });
+
+    const results = await collection.search('bill', 1);
+    expect(results).toBe(1);
+  });
+
   it('should import/export indexes', async () => {
     let indexId: string;
     let indexData: string;

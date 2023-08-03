@@ -1,5 +1,5 @@
 import { RxCollection, RxDatabase, RxDocument, RxPlugin } from 'rxdb';
-import { Index } from 'flexsearch';
+import { Index, SearchOptions, Limit } from 'flexsearch';
 
 export type RxExportIndexHandler = (key: string, value: string) => void | Promise<void>;
 
@@ -12,7 +12,11 @@ export type RxDatabaseSearch = RxDatabase & RxDatabaseIndexMethods;
 
 export type RxCollectionSearch<RxDocType = any> = RxCollection<RxDocType> & {
   $index: Index;
-  search(this: RxCollectionSearch, query: string): Promise<RxDocument[]>;
+  search(
+    this: RxCollectionSearch,
+    query: string,
+    options?: Limit | SearchOptions
+  ): Promise<RxDocument[]>;
 };
 
 function serialize(data: any, searchFields: string[]): string {
@@ -56,8 +60,12 @@ async function importIndexes(
   );
 }
 
-async function search(this: RxCollectionSearch, query: string): Promise<RxDocument[]> {
-  const ids = this.$index.search(query) as string[];
+async function search(
+  this: RxCollectionSearch,
+  query: string,
+  options?: Limit | SearchOptions
+): Promise<RxDocument[]> {
+  const ids = this.$index.search(query, options) as string[];
   const results = await this.findByIds(ids).exec();
   return Array.from(results.values());
 }
