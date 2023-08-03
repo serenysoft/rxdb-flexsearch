@@ -13,9 +13,24 @@ npm i rxdb-flexsearch flexsearch@0.7.21 --save
 
 ```js
 import { addRxPlugin } from 'rxdb';
+import { getRxStorageMemory } from 'rxdb/plugins/storage-memory';
 import { RxDBFlexSearchPlugin } from 'rxdb-flexsearch';
+import { userSchema } from './schemas';
 
 addRxPlugin(RxDBFlexSearchPlugin);
+
+const database = await createRxDatabase({
+  storage: getRxStorageMemory(),
+});
+
+await database.addCollections({
+  users: {
+    schema: userSchema,
+    options: {
+      searchable: true,
+    },
+  },
+});
 
 ...
 

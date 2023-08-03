@@ -21,6 +21,9 @@ describe('Replication', () => {
     await database.addCollections({
       users: {
         schema: userSchema,
+        options: {
+          searchable: true,
+        },
       },
     });
   });

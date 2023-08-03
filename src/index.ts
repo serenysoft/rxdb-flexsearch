@@ -95,12 +95,15 @@ export const RxDBFlexSearchPlugin: RxPlugin = {
     },
     RxCollection(proto: any) {
       proto.search = search;
+      proto.options = { searchable: false };
     },
   },
   hooks: {
     createRxCollection: {
-      after: (i) => {
-        initialize(i.collection);
+      after: ({ collection }) => {
+        if (collection.options.searchable) {
+          initialize(collection);
+        }
       },
     },
   },
