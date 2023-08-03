@@ -3,5 +3,5 @@ module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
   testPathIgnorePatterns: ['<rootDir>/dist/'],
-  coveragePathIgnorePatterns: ['/dist/', '/node_modules/', '/tests/database.ts'],
+  coveragePathIgnorePatterns: ['/dist/', '/node_modules/'],
 };

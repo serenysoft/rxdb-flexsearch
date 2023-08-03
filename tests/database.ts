@@ -1,5 +1,6 @@
 import { createRxDatabase } from 'rxdb';
 import { getRxStorageMemory } from 'rxdb/plugins/storage-memory';
+import { RxDatabaseSearch } from '../src';
 
 export const userSchema = {
   version: 0,
@@ -20,20 +21,12 @@ export const userSchema = {
   },
 };
 
-export async function initDatabase() {
+export async function initDatabase(options?: any): Promise<RxDatabaseSearch> {
   const database = await createRxDatabase({
     name: 'testdb',
     storage: getRxStorageMemory(),
+    ...options,
   });
 
-  await database.addCollections({
-    users: {
-      schema: userSchema,
-      options: {
-        searchFields: ['name', 'age'],
-      },
-    },
-  });
-
-  return database;
+  return database as RxDatabaseSearch;
 }

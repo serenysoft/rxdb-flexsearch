@@ -1,8 +1,7 @@
-import { addRxPlugin, createRxDatabase } from 'rxdb';
-import { getRxStorageMemory } from 'rxdb/plugins/storage-memory';
+import { addRxPlugin } from 'rxdb';
 import { RxDBDevModePlugin } from 'rxdb/plugins/dev-mode';
 import { RxCollectionSearch, RxDBFlexSearchPlugin, RxDatabaseSearch } from '../src';
-import { userSchema } from './database';
+import { initDatabase, userSchema } from './database';
 
 describe('Replication', () => {
   let database: RxDatabaseSearch;
@@ -12,11 +11,12 @@ describe('Replication', () => {
     addRxPlugin(RxDBDevModePlugin);
   });
 
-  beforeEach(async () => {
-    database = (await createRxDatabase({
-      name: 'testdb',
-      storage: getRxStorageMemory(),
-    })) as RxDatabaseSearch;
+  afterEach(async () => {
+    await database.remove();
+  });
+
+  it('should update index', async () => {
+    database = await initDatabase();
 
     await database.addCollections({
       users: {
@@ -26,13 +26,7 @@ describe('Replication', () => {
         },
       },
     });
-  });
 
-  afterEach(async () => {
-    await database.remove();
-  });
-
-  it('should update index', async () => {
     const collection = database.users as RxCollectionSearch;
 
     await collection.insert({
@@ -76,9 +70,21 @@ describe('Replication', () => {
     expect(results.length).toBe(0);
   });
 
-  it('should export/import indexes', async () => {
+  it('should import/export indexes', async () => {
     let indexId: string;
-    let indexData;
+    let indexData: string;
+
+    database = await initDatabase();
+
+    await database.addCollections({
+      users: {
+        schema: userSchema,
+        options: {
+          searchable: true,
+        },
+      },
+    });
+
     const collection = database.users as RxCollectionSearch;
 
     await collection.insert({
@@ -97,5 +103,31 @@ describe('Replication', () => {
 
     const { $index } = collection;
     expect($index.contain('1')).toBe(true);
+  });
+
+  it('should auto export indexes', async () => {
+    database = await initDatabase({
+      options: {
+        autoIndexStore: (key: string, value: string) => {
+          expect(key).toEqual('users');
+          expect(value).toBeTruthy();
+        },
+      },
+    });
+
+    await database.addCollections({
+      users: {
+        schema: userSchema,
+        options: {
+          searchable: true,
+        },
+      },
+    });
+
+    await database.users.insert({
+      id: '1',
+      name: 'Mark Zuckerberg',
+      age: 39,
+    });
   });
 });

@@ -1,7 +1,7 @@
 import { RxCollection, RxDatabase, RxDocument, RxPlugin } from 'rxdb';
 import { Index } from 'flexsearch';
 
-export type RxExportIndexHandler = (id: string, value: string) => void;
+export type RxExportIndexHandler = (key: string, value: string) => void | Promise<void>;
 
 export interface RxDatabaseIndexMethods {
   exportIndexes(handler: RxExportIndexHandler): Promise<void>;
@@ -31,9 +31,7 @@ async function exportIndexes(
     entries.map(([key, collection]) => {
       const { $index } = collection as RxCollectionSearch;
       if ($index) {
-        return $index.export((_, value) => {
-          handler(key, value);
-        });
+        return $index.export((_, value) => handler(key, value));
       }
     })
   );
@@ -66,6 +64,9 @@ async function search(this: RxCollectionSearch, query: string): Promise<RxDocume
 
 export function initialize(collection: RxCollection) {
   const index = new Index({ tokenize: 'full' });
+  const database = collection.database as RxDatabaseSearch;
+
+  const { autoIndexStore } = database.options;
   const { primaryPath } = collection.schema;
   const { properties } = collection.schema.jsonSchema;
   const searchFields = collection.options.searchFields || Object.keys(properties);
@@ -74,14 +75,26 @@ export function initialize(collection: RxCollection) {
 
   collection.postRemove((data) => {
     index.remove(data[primaryPath]);
+
+    if (autoIndexStore) {
+      index.export((_, data) => autoIndexStore(collection.name, data));
+    }
   }, false);
 
   collection.postSave((data) => {
     index.add(data[primaryPath], serialize(data, searchFields));
+
+    if (autoIndexStore) {
+      index.export((_, data) => autoIndexStore(collection.name, data));
+    }
   }, false);
 
   collection.postInsert((data) => {
     index.add(data[primaryPath], serialize(data, searchFields));
+
+    if (autoIndexStore) {
+      index.export((_, data) => autoIndexStore(collection.name, data));
+    }
   }, false);
 }
 
@@ -95,13 +108,12 @@ export const RxDBFlexSearchPlugin: RxPlugin = {
     },
     RxCollection(proto: any) {
       proto.search = search;
-      proto.options = { searchable: false };
     },
   },
   hooks: {
     createRxCollection: {
       after: ({ collection }) => {
-        if (collection.options.searchable) {
+        if (collection.options?.searchable) {
           initialize(collection);
         }
       },
