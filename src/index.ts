@@ -66,7 +66,7 @@ export function initialize(collection: RxCollection) {
   const index = new Index({ tokenize: 'full' });
   const database = collection.database as RxDatabaseSearch;
 
-  const { autoIndexStore } = database.options;
+  const { autoIndexExport } = database.options;
   const { primaryPath } = collection.schema;
   const { properties } = collection.schema.jsonSchema;
   const searchFields = collection.options.searchFields || Object.keys(properties);
@@ -76,24 +76,24 @@ export function initialize(collection: RxCollection) {
   collection.postRemove((data) => {
     index.remove(data[primaryPath]);
 
-    if (autoIndexStore) {
-      index.export((_, data) => autoIndexStore(collection.name, data));
+    if (autoIndexExport) {
+      index.export((_, data) => autoIndexExport(collection.name, data));
     }
   }, false);
 
   collection.postSave((data) => {
     index.add(data[primaryPath], serialize(data, searchFields));
 
-    if (autoIndexStore) {
-      index.export((_, data) => autoIndexStore(collection.name, data));
+    if (autoIndexExport) {
+      index.export((_, data) => autoIndexExport(collection.name, data));
     }
   }, false);
 
   collection.postInsert((data) => {
     index.add(data[primaryPath], serialize(data, searchFields));
 
-    if (autoIndexStore) {
-      index.export((_, data) => autoIndexStore(collection.name, data));
+    if (autoIndexExport) {
+      index.export((_, data) => autoIndexExport(collection.name, data));
     }
   }, false);
 }

@@ -54,13 +54,13 @@ await database.exportIndexes({
 
 ```
 
-You can use the `autoIndexStore` database option to automatically export indexes when the collection is modified.
+You can use the `autoIndexExport` database option to automatically export indexes when the collection is modified.
 
 ```js
 const database = await createRxDatabase({
   storage: getRxStorageMemory(),
   options: {
-    autoIndexStore: (key, value) => {
+    autoIndexExport: (key, value) => {
       localStorage.setItem(key, value);
     },
   }

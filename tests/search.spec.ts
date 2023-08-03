@@ -108,7 +108,7 @@ describe('Replication', () => {
   it('should auto export indexes', async () => {
     database = await initDatabase({
       options: {
-        autoIndexStore: (key: string, value: string) => {
+        autoIndexExport: (key: string, value: string) => {
           expect(key).toEqual('users');
           expect(value).toBeTruthy();
         },
