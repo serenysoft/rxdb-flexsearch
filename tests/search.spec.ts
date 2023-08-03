@@ -97,7 +97,7 @@ describe('Replication', () => {
     });
 
     const results = await collection.search('bill', 1);
-    expect(results).toBe(1);
+    expect(results.length).toBe(1);
   });
 
   it('should import/export indexes', async () => {
