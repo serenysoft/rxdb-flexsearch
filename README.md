@@ -28,12 +28,12 @@ console.log(results);
 
 ```js
 
-const results = await database.exportIndexes((key, data) => {
+await database.exportIndexes((key, data) => {
   localStorage.setItem(key, data);
 });
 
 
-const results = await database.exportIndexes({
+await database.exportIndexes({
   [key]: localStorage.getItem(key);
 });
 
