@@ -25,6 +25,9 @@ export async function initDatabase(options?: any): Promise<RxDatabaseSearch> {
   const database = await createRxDatabase({
     name: 'testdb',
     storage: getRxStorageMemory(),
+    options: {
+      search: { tokenize: 'full' },
+    },
     ...options,
   });
 

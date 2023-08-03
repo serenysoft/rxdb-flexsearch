@@ -63,13 +63,14 @@ async function search(this: RxCollectionSearch, query: string): Promise<RxDocume
 }
 
 export function initialize(collection: RxCollection) {
-  const index = new Index({ tokenize: 'full' });
   const database = collection.database as RxDatabaseSearch;
+  const { autoIndexExport, search } = database.options;
 
-  const { autoIndexExport } = database.options;
   const { primaryPath } = collection.schema;
   const { properties } = collection.schema.jsonSchema;
   const searchFields = collection.options.searchFields || Object.keys(properties);
+
+  const index = new Index(search);
 
   (collection as RxCollectionSearch).$index = index;
 

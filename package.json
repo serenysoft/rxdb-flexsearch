@@ -38,7 +38,7 @@
     "lint": "eslint \"src/**/*\" \"tests/**/*\"",
     "release": "release-it --only-version",
     "test": "cross-env NODE_ENV=testing jest --verbose --runInBand --detectOpenHandles",
-    "test:ci": "cross-env NODE_ENV=testing jest --verbose --collect-coverage --runInBand --forceExit"
+    "test:ci": "cross-env NODE_ENV=testing jest --verbose --collect-coverage --runInBand"
   },
   "engines": {
     "node": ">= 16"
